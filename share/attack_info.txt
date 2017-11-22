@@ -1,0 +1,10 @@
+attack_ip:103.245.44.2
+bot_ip:208.115.94.2
+control_ip:208.115.88.2
+wait:10
+start_time:2017-11-21-16-29-10
+attack_time:300
+per_attack_time:30
+attack_frequency:0
+length:32
+max:100

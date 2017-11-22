@@ -1,0 +1,31 @@
+#!/bin/bash
+#dep
+apt-get install -y -o Acquire::ForceIPv4=true bridge-utils openvswitch-switch openvswitch-common python-pip ipcalc nfs-common
+service openvswitch-switch start
+pip install IPy
+
+#pipework
+git clone https://github.com/jpetazzo/pipework
+cat pipework/pipework | sed "s/if installed ipcalc;/if false;/g" >/usr/local/bin/pipework
+chmod +x /usr/local/bin/pipework
+
+#nsenter
+
+#ring topo.
+echo "brctl addbr br0"
+brctl addbr br0
+echo "ip link set dev br0 up"
+ip link set dev br0 up
+echo "brctl addbr br1"
+brctl addbr br1
+echo "ip link set dev br1 up"
+ip link set dev br1 up
+
+echo "ovs-vsctl add-br ovs0"
+ovs-vsctl add-br ovs0
+echo "ovs-vsctl set bridge ovs0 stp_enable=true"
+ovs-vsctl set bridge ovs0 stp_enable=true
+echo "ovs-vsctl add-port ovs0 br0"
+ovs-vsctl add-port ovs0 br0
+echo "ovs-vsctl add-port ovs0 br1"
+ovs-vsctl add-port ovs0 br1

@@ -6,20 +6,16 @@ for i in $(seq 0 $(($(echo ${ka[@]} | wc -w)-1))); do test "$3" == "${ka[$i]}" &
 }
 
 #step 0: get hosts info.
-printf "password: " && read -s pass && echo;
-wd="/home/hitnis/distro/"
-sd="10.10.11.132:/home/hitnis/share/"
+#printf "password: " && read -s pass && echo;
+pass=1q2w3e4r
+wd="/home/hitnis/check="
+#sd="10.10.11.132:/home/hitnis/share/"
 ia=($(cat << "EOF"
-10.10.11.210
-10.10.11.212
-10.10.11.130
-10.10.11.131
-10.10.11.132
+10.10.11.141 
 10.10.11.111
-10.10.11.112
 EOF
 ))
-ha=("host_1" "host_2" "host_3" "host_4" "host_5" "host_6" "host_7");
+ha=("host_1" "host_2");
 
 ###############################
 #step 1: set up ovs.
@@ -65,42 +61,23 @@ test $l -eq 2 && echo ">> gre 0 ${ha[0]} ${ha[$(((1)%$l))]}" && gre 0 ${ha[0]} $
 
 ###############################
 #step 2: set up hosts.
-dist(){
-hn=$1
-ip=$2
-
-echo ">>> dist check image"
-q=$(expect -c "set timeout -1
-spawn ssh -o \"StrictHostKeyChecking no\" root@$ip \"test ! -z \\\"\\\$(docker images | grep centos-quagga-bgp.*latest)\\\" && echo has || echo not\"
-expect -re \".*password.*\" {send \"$pass\r\"}
-expect eof" | tail -n 1)
-
-echo ">>> send image"
-echo "remote host $q"
-test ! -z "$(echo $q | grep not)" && expect -c "set timeout -1
-spawn scp -o \"StrictHostKeyChecking no\" $wd/image.tar root@$ip:$wd
+package=20171123.tar.gz
+remote_dir=/home/hitnis
+execute(){
+ip=$1
+script=$2
+remote=$3
+expect -c "set timeout -1
+spawn scp $script root@$ip:$remote
 expect -re \".*password.*\" {send \"$pass\r\"}
 expect eof"
-
-echo ">>> send topo files"
 expect -c "set timeout -1
-spawn scp -o \"StrictHostKeyChecking no\" $(ls $wd/* -d | grep -v host-node | grep -v image.tar | xargs) $wd/host-node/node-list-$hn.bgp $wd/host-node/link-list-$hn.bgp $wd/host-node/node-list-$hn root@$ip:$wd
+spawn ssh root@$ip \"cd $remote; tar zxvf $script && cd $(echo $script | sed 's/\.tar\.gz//g'); ./run.sh; echo allclear\"
 expect -re \".*password.*\" {send \"$pass\r\"}
-expect eof"
-echo ">>> generate containers"
-expect -c "set timeout -1
-spawn ssh root@$ip \"cd $wd && test -z \\\"\\\$(docker images | grep centos-quagga-bgp.*latest)\\\" && docker load -i image.tar; python gen_container.py $wd/node-list-$i.bgp $wd/link-list-$i.bgp $wd/node-list-$i $wd/node-list-$i.bgp.new; echo "allclear"\"
-expect -re \".*password.*\" {send \"$pass\r\"}
-expect \"allclear\" {exit}"
+expect -re \"allclear\" {exit}"
 }
 
-an=3;
-l=$(($(echo ${ha[@]} | wc -w)))
-test -d $wd/host-node && rm -r $wd/host-node
-cd $wd
-mkdir -p $wd/host-node && python gen-as-topo.py $l $an $wd/host-node
-for i in $(seq 1 $l); do echo ">> python gen-bgp.py $wd/host-node/node-list-$i $wd/host-node/link-list-$i $wd/host-node/interlink-list-$i"; python gen-bgp.py $wd/host-node/node-list-$i $wd/host-node/link-list-$i $wd/host-node/interlink-list-$i; echo ">> dist $i ${ia[$(($i-1))]}"; dist $i ${ia[$(($i-1))]}; done
-cat $wd/host-node/interlink-list-*.bgp >$wd/host-node/interlink-list-all.bgp
+for i in ${ia[@]}; do execute $i $package $remote_dir; done
 
 ###############################
 #step 3: link hosts.
@@ -123,4 +100,4 @@ expect -re \".*password.*\" {send \"$pass\r\"}
 expect eof"
 }
 
-cat $wd/host-node/interlink-list-all.bgp | while read l; do link $l; done
+cat /home/yupeng/check-network/20171123/conf/interlink.txt | while read l; do link $l; done

@@ -9,7 +9,7 @@ for i in $(seq 0 $(($(echo ${ka[@]} | wc -w)-1))); do test "$3" == "${ka[$i]}" &
 #printf "password: " && read -s pass && echo;
 pass=1q2w3e4r
 wd="/home/hitnis/check-network/"
-#sd="10.10.11.132:/home/hitnis/share/"
+sd="10.10.11.132:/home/hitnis/share/"
 code="/home/john/automation/"
 tar="20171123"
 package=$tar.tar.gz
@@ -33,7 +33,7 @@ expect -re \".*password.*\" {send \"$pass\r\"}
 expect eof"
 echo ">>> nfs"
 expect -c "set timeout -1
-spawn ssh root@$ip \"umount /home/quagga; mkdir -p /home/quagga && mount $sd /home/quagga; mkdir -p $wd \"
+spawn ssh root@$ip \"umount /home/share; mkdir -p /home/share && mount $sd /home/share; mkdir -p $wd \"
 expect -re \".*password.*\" {send \"$pass\r\"}
 expect eof"
 }
@@ -76,7 +76,10 @@ expect -re \".*password.*\" {send \"$pass\r\"}
 expect -re \"allclear\" {exit}"
 }
 
-for i in ${ia[@]}; do execute $i $package $remote_dir; done
+for i in ${ia[@]}; do
+  execute $i $package $remote_dir &
+done
+wait
 
 ###############################
 #step 3: link hosts.

@@ -8,14 +8,14 @@ for i in $(seq 0 $(($(echo ${ka[@]} | wc -w)-1))); do test "$3" == "${ka[$i]}" &
 #step 0: get hosts info.
 #printf "password: " && read -s pass && echo;
 pass=1q2w3e4r
-wd="/home/hitnis/check="
+wd="/home/hitnis/check-network/"
 #sd="10.10.11.132:/home/hitnis/share/"
-ia=($(cat << "EOF"
-10.10.11.141 
-10.10.11.111
-EOF
-))
-ha=("host_1" "host_2");
+code="/home/john/automation/"
+tar="20171123"
+package=$tar.tar.gz
+#tar zxvf $package
+ia=($(cut -d'#' -f1 $code/$tar/conf/hostip-hostid.txt))
+ha=($(cut -d'#' -f2 $code/$tar/conf/hostip-hostid.txt | xargs -I {} echo host_{}))
 
 ###############################
 #step 1: set up ovs.
@@ -61,7 +61,6 @@ test $l -eq 2 && echo ">> gre 0 ${ha[0]} ${ha[$(((1)%$l))]}" && gre 0 ${ha[0]} $
 
 ###############################
 #step 2: set up hosts.
-package=20171123.tar.gz
 remote_dir=/home/hitnis
 execute(){
 ip=$1
@@ -100,4 +99,4 @@ expect -re \".*password.*\" {send \"$pass\r\"}
 expect eof"
 }
 
-cat /home/yupeng/check-network/20171123/conf/interlink.txt | while read l; do link $l; done
+cat $code/$tar/conf/interlink.txt | while read l; do link $l; done

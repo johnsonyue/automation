@@ -71,7 +71,7 @@ spawn scp $script root@$ip:$remote
 expect -re \".*password.*\" {send \"$pass\r\"}
 expect eof"
 expect -c "set timeout -1
-spawn ssh root@$ip \"cd $remote; tar zxvf $script && cd $(echo $script | sed 's/\.tar\.gz//g'); ./run.sh; echo allclear\"
+spawn ssh root@$ip \"cd $remote; tar zxf $script && cd $(echo $script | sed 's/\.tar\.gz//g'); ./run.sh; echo allclear\"
 expect -re \".*password.*\" {send \"$pass\r\"}
 expect -re \"allclear\" {exit}"
 }
@@ -90,11 +90,11 @@ i2=$(echo $1 | cut -d'#' -f8)
 a1=$(map "${ha[*]}" "${ia[*]}" $h1)
 a2=$(map "${ha[*]}" "${ia[*]}" $h2)
 expect -c "set timeout -1
-spawn ssh root@$a1 \"pipework br0 -i eth\\\$((\\\$(docker exec $c1 ifconfig | grep -e '^eth.*' | grep -v lo | awk '{print \\\$1}' | grep -o -e '\[0-9\]*' | sort -nr | head -n 1)+1)) $c1 $i1\"
+spawn ssh root@$a1 \"n=\\\$((\\\$(docker exec $c1 ifconfig | grep -e '^eth.*' | grep -v lo | awk '{print \\\$1}' | grep -o -e '\[0-9\]*' | sort -nr | head -n 1)+1)); pipework br0 -i eth\\\$n $c1 $i1; docker exec $c1 ip link set dev eth\\\$n mtu 1462\"
 expect -re \".*password.*\" {send \"$pass\r\"}
 expect eof"
 expect -c "set timeout -1
-spawn ssh root@$a2 \"pipework br0 -i eth\\\$((\\\$(docker exec $c2 ifconfig | grep -e '^eth.*' | grep -v lo | awk '{print \\\$1}' | grep -o -e '\[0-9\]*' | sort -nr | head -n 1)+1)) $c2 $i2\"
+spawn ssh root@$a2 \"n=\\\$((\\\$(docker exec $c2 ifconfig | grep -e '^eth.*' | grep -v lo | awk '{print \\\$1}' | grep -o -e '\[0-9\]*' | sort -nr | head -n 1)+1)); pipework br0 -i eth\\\$n $c2 $i2; docker exec $c2 ip link set dev eth\\\$n mtu 1462\"
 expect -re \".*password.*\" {send \"$pass\r\"}
 expect eof"
 }

@@ -62,7 +62,7 @@ expect eof"
 #for i in ${ia[@]}; do echo ">> ovs $i"; ovs $i; done
 for i in ${ia[@]}; do
 echo ">> ovs $i"
-ovs $i;
+ovs $i
 done
 
 l=$(($(echo ${ha[@]} | wc -w)))
